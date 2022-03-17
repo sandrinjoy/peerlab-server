@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/sandrinjoy/peerlab-server#readme",
   "dependencies": {
+    "express": "^4.17.3",
     "ws": "^8.5.0"
   }
 }

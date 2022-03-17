@@ -1,10 +1,13 @@
-const WebSocket = require("ws");
+const PORT = process.env.PORT || 3000;
 
-const wss = new WebSocket.Server({ port: 8080 });
+const server = express().listen(PORT, () =>
+  console.log(`Listening on ${PORT}`)
+);
+const { Server } = require("ws");
+
+const wss = new Server({ server });
 
 wss.on("connection", (ws) => {
-  ws.on("message", (message) => {
-    console.log(`Received message => ${message}`);
-  });
-  ws.send("Hello! Message From Server!!");
+  console.log("Client connected");
+  ws.on("close", () => console.log("Client disconnected"));
 });
