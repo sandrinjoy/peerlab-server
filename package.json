@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/sandrinjoy/peerlab-server/issues"
   },
-  "homepage": "https://github.com/sandrinjoy/peerlab-server#readme"
+  "homepage": "https://github.com/sandrinjoy/peerlab-server#readme",
+  "dependencies": {
+    "ws": "^8.5.0"
+  }
 }
