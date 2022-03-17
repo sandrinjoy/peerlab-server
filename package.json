@@ -1,0 +1,24 @@
+{
+  "name": "peerlab-server",
+  "version": "1.0.0",
+  "description": "websocket server for peerlab client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sandrinjoy/peerlab-server.git"
+  },
+  "keywords": [
+    "peerlab",
+    "websocket",
+    "nodejs"
+  ],
+  "author": "sandrin joy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sandrinjoy/peerlab-server/issues"
+  },
+  "homepage": "https://github.com/sandrinjoy/peerlab-server#readme"
+}
