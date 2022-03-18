@@ -1,7 +1,7 @@
 const express = require("express");
 const PORT = process.env.PORT || 3000;
 const server = express()
-  .get("/", (req, res) => {
+  .get("/*", (req, res) => {
     res.redirect("https://peerlab.vercel.app");
   })
   .listen(PORT, () => console.log(`Listening on ${PORT}`));
@@ -17,7 +17,6 @@ wss.on("connection", (client) => {
   });
   client.on("error", (err) => {
     client.close();
-    log("Oops ! something wrong happened");
   });
 
   client.on("close", () => console.log("Client disconnected"));
