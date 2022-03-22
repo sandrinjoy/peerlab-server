@@ -1,68 +1,82 @@
-import { nanoid } from "nanoid";
-import { WebSocketServer } from "ws";
-const PORT = process.env.PORT || 3000;
+import { customAlphabet } from "nanoid";
 
+import { WebSocketServer } from "ws";
+import express from "express";
+const PORT = process.env.PORT || 3000;
+const nanoid = customAlphabet("abcdefghjkopqrstxyz", 5);
 let users = {};
 let labs = {};
-
-const wss = new WebSocketServer({ port: PORT });
+const server = express()
+  .get("/findlab", (req, res) => {
+    const labId = req.query.id;
+    if (!labs[labId]) {
+      res.json({ valid: false });
+    } else {
+      res.json({ valid: true });
+    }
+  })
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
+const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws) => {
-  ws.on("message", (data) => {});
+  ws.on("message", (data) => {
+    messageController(ws, data);
+  });
   ws.on("error", () => {});
   ws.on("close", () => {});
 });
 
-// wss.on("connection", (client) => {
-//   client.on("open", () => {
-//     const userID = nanoid();
-//     users[userID] = client;
-//     console.log("hi");
-//   });
-//   client.on("message", (data) => {
-//     //     users[userId] = client; managing users
-//     const msg = JSON.parse(data.toString());
-
-//     if (msg.type === "NEW_USER") {
-//       newUser(client);
-//     }
-//     const isLab = labs.find(({ id }) => id === msg.id);
-//     if (!isLab) {
-//       labs.push(msg);
-//       // client.send("Room Created");
-//     } else {
-//       // client.send("room already exists");
-//     }
-
-//     console.log(isLab);
-
-//     // client.send("welcome to peerlab server");
-//   });
-//   client.on("error", (err) => {
-//     console.log(err);
-//     client.close();
-//   });
-
-//   client.on("close", () => {
-//     deleteUser(client);
-//   });
-// });
-
-const newUser = (client) => {
-  const newId = nanoid();
-  if (!users[newId]) {
-    let newClient = client;
-    newClient.id = newId;
-    users[newId] = newClient;
-    client.send(
-      JSON.stringify({
-        type: "ID_GENERATED",
-        body: { id: users[newId].id },
-      })
-    );
+const messageController = (ws, data) => {
+  const msg = JSON.parse(data.toString());
+  switch (msg.type) {
+    case "NEW_USER": {
+      newUser(ws, msg.body);
+    }
+    case "FIND_USER": {
+      findUser(ws, msg.body);
+    }
+    case "NEW_LAB": {
+      newLab(ws, msg.body);
+    }
+    case "FIND_LAB": {
+      findLab(ws, msg.body);
+    }
+    default: {
+    }
   }
-  console.log(users);
 };
+
+const newUser = (ws, data) => {};
+const findUser = (ws, data) => {};
+const newLab = (ws, data) => {
+  const lab = nanoid();
+  const res = {
+    type: "NEW_LAB",
+    payload: lab,
+  };
+  labs[lab] = {
+    id: lab,
+    users: [ws],
+  };
+  ws.send(JSON.stringify(res));
+};
+const findLab = (ws, data) => {};
+
+// const newUser = (client) => {
+//   const newId = nanoid();
+//   if (!users[newId]) {
+//     let newClient = client;
+//     newClient.id = newId;
+//     users[newId] = newClient;
+//     client.send(
+//       JSON.stringify({
+//         type: "ID_GENERATED",
+//         body: { id: users[newId].id },
+//       })
+//     );
+//   }
+//   console.log(users);
+// };
 const deleteUser = (client) => {
   try {
     delete users[client.userId];
