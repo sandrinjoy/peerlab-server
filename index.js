@@ -2,23 +2,30 @@ import { customAlphabet } from "nanoid";
 
 import { WebSocketServer } from "ws";
 import express from "express";
+import cors from "cors";
 const PORT = process.env.PORT || 3000;
 const nanoid = customAlphabet("abcdefghjkopqrstxyz", 5);
 let users = {};
 let labs = {};
 const server = express()
+  .use(cors())
   .get("/findlab", (req, res) => {
     const labId = req.query.id;
     if (!labs[labId]) {
-      res.json({ valid: false });
+      res.json({ valid: false, id: labId });
     } else {
-      res.json({ valid: true });
+      res.json({ valid: true, id: labId });
     }
   })
   .listen(PORT, () => console.log(`Listening on ${PORT}`));
 const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws) => {
+  const res = {
+    type: "WS_SUCCESS",
+  };
+  ws.send(JSON.stringify(res));
+
   ws.on("message", (data) => {
     messageController(ws, data);
   });
@@ -30,29 +37,45 @@ const messageController = (ws, data) => {
   const msg = JSON.parse(data.toString());
   switch (msg.type) {
     case "NEW_USER": {
-      newUser(ws, msg.body);
+      newUser(ws, msg.payload);
+      break;
     }
     case "FIND_USER": {
       findUser(ws, msg.body);
+      break;
     }
     case "NEW_LAB": {
-      newLab(ws, msg.body);
+      newLab(ws, msg);
+      break;
     }
-    case "FIND_LAB": {
-      findLab(ws, msg.body);
+    case "JOIN_LAB": {
+      findLab(ws, msg.payload);
+      break;
     }
     default: {
     }
   }
 };
 
-const newUser = (ws, data) => {};
+const newUser = (ws, userId) => {
+  users[userId] = {
+    id: userId,
+    ws: ws,
+  };
+  const res = {
+    type: "VALIDATE_USER",
+    payload: users[userId].id,
+  };
+  ws.send(JSON.stringify(res));
+};
 const findUser = (ws, data) => {};
 const newLab = (ws, data) => {
   const lab = nanoid();
   const res = {
     type: "NEW_LAB",
-    payload: lab,
+    payload: {
+      id: lab,
+    },
   };
   labs[lab] = {
     id: lab,
@@ -60,7 +83,19 @@ const newLab = (ws, data) => {
   };
   ws.send(JSON.stringify(res));
 };
-const findLab = (ws, data) => {};
+const findLab = (ws, labId) => {
+  console.log("HI");
+  const valid = labId in labs;
+
+  const res = {
+    type: "JOIN_LAB",
+    payload: {
+      valid,
+      id: labId,
+    },
+  };
+  ws.send(JSON.stringify(res));
+};
 
 // const newUser = (client) => {
 //   const newId = nanoid();
